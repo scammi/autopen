@@ -1,0 +1,94 @@
+# Compiled output
+dist
+build
+lib
+
+# Dependencies
+node_modules
+.pnpm-store
+
+# Workspace specific outputs
+/apps/*/dist
+/packages/*/dist
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+coverage
+.nyc_output
+/.nyc_output
+/coverage
+
+# IDEs and editors
+.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Environment variables
+.env
+.env.*
+!.env.example
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# Temporary files
+.temp
+.tmp
+tmp/
+temp/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# TypeScript
+*.tsbuildinfo
+.tscache
+
+# Nest.js specific
+.nest
+
+# Debug
+.debug
+
+# Docker
+docker-compose.override.yml
+
+# Serverless
+.serverless
+
+# CDK
+.cdk.staging
+cdk.out
+
+# Optional: local certificates
+*.pem
+*.crt
+*.key
