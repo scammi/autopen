@@ -99,9 +99,6 @@ importers:
       '@autopen/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@babel/runtime':
-        specifier: ^7.26.0
-        version: 7.26.0
       '@expo/vector-icons':
         specifier: ^14.0.2
         version: 14.0.4
@@ -186,6 +183,9 @@ importers:
     devDependencies:
       '@babel/core':
         specifier: ^7.25.2
+        version: 7.26.0
+      '@babel/runtime':
+        specifier: ^7.26.0
         version: 7.26.0
       '@types/jest':
         specifier: ^29.5.12
