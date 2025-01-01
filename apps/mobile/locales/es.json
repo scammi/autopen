@@ -1,0 +1,12 @@
+{
+    "welcome": {
+      "title": "Bienvenido bro",
+      "name": "Nombre",
+      "lastname": "Apellido",
+      "dni": "DNI",
+      "company": "Compañía",
+      "enter": "Ingresar",
+      "login": "Iniciar Sesión"
+    }
+  }
+  

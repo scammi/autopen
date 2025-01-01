@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 const WelcomeScreen = () => {
   const router = useRouter();
+  const { t } = useTranslation();
+
   const [formData, setFormData] = useState({
-    nombre: '',
+    name: '',
     apellido: '',
     dni: '',
     compania: '',
@@ -19,50 +22,50 @@ const WelcomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido</Text>
+      <Text style={styles.title}>{t('welcome.title')}</Text>
       <View style={styles.form}>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Nombre</Text>
+          <Text style={styles.label}>{t('welcome.name')}</Text>
           <TextInput
             style={styles.input}
             value={formData.nombre}
             onChangeText={(text) => setFormData({...formData, nombre: text})}
-            placeholder="Ingrese su nombre"
+            placeholder={t('welcome.name')}
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Apellido</Text>
+          <Text style={styles.label}>{t('welcome.lastname')}</Text>
           <TextInput
             style={styles.input}
             value={formData.apellido}
             onChangeText={(text) => setFormData({...formData, apellido: text})}
-            placeholder="Ingrese su apellido"
+            placeholder={t('welcome.lastname')}
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>DNI</Text>
+          <Text style={styles.label}>{t('welcome.dni')}</Text>
           <TextInput
             style={styles.input}
             value={formData.dni}
             onChangeText={(text) => setFormData({...formData, dni: text})}
-            placeholder="Ingrese su DNI"
+            placeholder={t('welcome.dni')}
             keyboardType="numeric"
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Compañía</Text>
+          <Text style={styles.label}>{t('welcome.company')}</Text>
           <TextInput
             style={styles.input}
             value={formData.compania}
             onChangeText={(text) => setFormData({...formData, compania: text})}
-            placeholder="Ingrese su compañía"
+            placeholder={t('welcome.company')}
           />
         </View>
 
-        <Button title="Ingresar" onPress={handleLogin} />
+        <Button title={t('welcome.enter')} onPress={handleLogin} />
       </View>
     </View>
   );
