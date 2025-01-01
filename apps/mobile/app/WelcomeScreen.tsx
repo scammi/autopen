@@ -1,73 +1,89 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 const WelcomeScreen = () => {
   const router = useRouter();
   const { t } = useTranslation();
 
+  const lastNameRef = useRef<TextInput>(null);
+  const dniRef = useRef<TextInput>(null);
+  const companiaRef = useRef<TextInput>(null);
+
   const [formData, setFormData] = useState({
-    name: '',
+    nombre: '',
     apellido: '',
     dni: '',
     compania: '',
   });
 
   const handleLogin = () => {
-    // Implement login logic here with formData
     console.log(formData);
     router.push('/(tabs)');
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{t('welcome.title')}</Text>
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t('welcome.name')}</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.nombre}
-            onChangeText={(text) => setFormData({...formData, nombre: text})}
-            placeholder={t('welcome.name')}
-          />
-        </View>
+    <>
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} />
+      <View style={styles.container}>
+        <Text style={styles.title}>{t('welcome.title')}</Text>
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>{t('welcome.name')}</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.nombre}
+              onChangeText={(text) => setFormData({...formData, nombre: text})}
+              returnKeyType="next"
+              onSubmitEditing={() => lastNameRef.current?.focus()}
+              placeholder={t('welcome.name')}
+            />
+          </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t('welcome.lastname')}</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.apellido}
-            onChangeText={(text) => setFormData({...formData, apellido: text})}
-            placeholder={t('welcome.lastname')}
-          />
-        </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>{t('welcome.lastname')}</Text>
+            <TextInput
+              ref={lastNameRef}
+              style={styles.input}
+              value={formData.apellido}
+              onChangeText={(text) => setFormData({...formData, apellido: text})}
+              returnKeyType="next"
+              onSubmitEditing={() => dniRef.current?.focus()}
+              placeholder={t('welcome.lastname')}
+            />
+          </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t('welcome.dni')}</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.dni}
-            onChangeText={(text) => setFormData({...formData, dni: text})}
-            placeholder={t('welcome.dni')}
-            keyboardType="numeric"
-          />
-        </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>{t('welcome.dni')}</Text>
+            <TextInput
+              style={styles.input}
+              ref={dniRef}
+              value={formData.dni}
+              onChangeText={(text) => setFormData({...formData, dni: text})}
+              returnKeyType="next"
+              onSubmitEditing={() => companiaRef.current?.focus()}
+              placeholder={t('welcome.dni')}
+              keyboardType="numeric"
+            />
+          </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t('welcome.company')}</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.compania}
-            onChangeText={(text) => setFormData({...formData, compania: text})}
-            placeholder={t('welcome.company')}
-          />
-        </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>{t('welcome.company')}</Text>
+            <TextInput
+              style={styles.input}
+              ref={companiaRef}
+              value={formData.compania}
+              onChangeText={(text) => setFormData({...formData, compania: text})}
+              placeholder={t('welcome.company')}
+              returnKeyType="done"
+            />
+          </View>
 
-        <Button title={t('welcome.enter')} onPress={handleLogin} />
+          <Button title={t('welcome.enter')} onPress={handleLogin} />
+        </View>
       </View>
-    </View>
+    </>
   );
 };
 
