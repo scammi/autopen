@@ -4,8 +4,13 @@ import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useSignerStore } from '@autopen/shared/store/useSignerStore';
 
 export default function HomeScreen() {
+  const { signer } = useSignerStore();
+
+  console.log('>>>> sfaed', signer);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}

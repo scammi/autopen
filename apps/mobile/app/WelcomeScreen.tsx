@@ -2,24 +2,30 @@ import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { useSignerStore } from '@autopen/shared/store/useSignerStore';
 
 const WelcomeScreen = () => {
   const router = useRouter();
   const { t } = useTranslation();
+
+  const { signer, setSigner } = useSignerStore();
 
   const lastNameRef = useRef<TextInput>(null);
   const dniRef = useRef<TextInput>(null);
   const companiaRef = useRef<TextInput>(null);
 
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    dni: '',
-    compania: '',
+    nombre: signer?.nombre ?? '',
+    apellido: signer?.apellido ?? '',
+    dni: signer?.dni ?? '',
+    compania: signer?.compania ?? '',
   });
 
   const handleLogin = () => {
-    console.log(formData);
+    console.log('>>>>');
+    setSigner(formData);
+    console.log(signer);
+
     router.push('/(tabs)');
   };
 
@@ -34,7 +40,7 @@ const WelcomeScreen = () => {
             <TextInput
               style={styles.input}
               value={formData.nombre}
-              onChangeText={(text) => setFormData({...formData, nombre: text})}
+              onChangeText={text => setFormData({ ...formData, nombre: text })}
               returnKeyType="next"
               onSubmitEditing={() => lastNameRef.current?.focus()}
               placeholder={t('welcome.name')}
@@ -47,7 +53,9 @@ const WelcomeScreen = () => {
               ref={lastNameRef}
               style={styles.input}
               value={formData.apellido}
-              onChangeText={(text) => setFormData({...formData, apellido: text})}
+              onChangeText={text =>
+                setFormData({ ...formData, apellido: text })
+              }
               returnKeyType="next"
               onSubmitEditing={() => dniRef.current?.focus()}
               placeholder={t('welcome.lastname')}
@@ -60,7 +68,7 @@ const WelcomeScreen = () => {
               style={styles.input}
               ref={dniRef}
               value={formData.dni}
-              onChangeText={(text) => setFormData({...formData, dni: text})}
+              onChangeText={text => setFormData({ ...formData, dni: text })}
               returnKeyType="next"
               onSubmitEditing={() => companiaRef.current?.focus()}
               placeholder={t('welcome.dni')}
@@ -74,7 +82,9 @@ const WelcomeScreen = () => {
               style={styles.input}
               ref={companiaRef}
               value={formData.compania}
-              onChangeText={(text) => setFormData({...formData, compania: text})}
+              onChangeText={text =>
+                setFormData({ ...formData, compania: text })
+              }
               placeholder={t('welcome.company')}
               returnKeyType="done"
             />
