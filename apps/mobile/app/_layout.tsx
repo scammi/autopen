@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import '@/config/i18n';
+import '../config/store';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 

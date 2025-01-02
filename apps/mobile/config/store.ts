@@ -1,32 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PersistStorage } from 'zustand/middleware';
-import { useSignerStore } from '@autopen/shared/store/useSignerStore';
+import { setPersistStorage } from '@autopen/shared/store/createStore';
 
-// Generic storage factory that works with any Zustand store
-export function createPersistStorage<T>(): PersistStorage<T> {
+export function createPersistStorage() {
   return {
-    getItem: async name => {
+    getItem: async (name: string) => {
       const value = await AsyncStorage.getItem(name);
       return value ? JSON.parse(value) : null;
     },
-    setItem: async (name, value) => {
+    setItem: async (name: string, value: any) => {
       await AsyncStorage.setItem(name, JSON.stringify(value));
     },
-    removeItem: async name => {
+    removeItem: async (name: string) => {
       await AsyncStorage.removeItem(name);
     },
   };
 }
 
-useSignerStore.persist.setOptions({
-  storage: createPersistStorage(),
-});
-
-// Example of how to use with future stores:
-/*
-import { useDocumentStore } from '@autopen/shared/store/useDocumentStore';
-
-useDocumentStore.persist.setOptions({
-  storage: createPersistStorage(),
-});
-*/
+// Configure storage once for all stores
+setPersistStorage(createPersistStorage());

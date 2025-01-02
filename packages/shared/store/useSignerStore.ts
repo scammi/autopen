@@ -1,5 +1,4 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createStore } from './createStore';
 
 interface SignerState {
   signer: {
@@ -12,15 +11,13 @@ interface SignerState {
   clearSigner: () => void;
 }
 
-export const useSignerStore = create<SignerState>()(
-  persist(
-    set => ({
-      signer: null,
-      setSigner: data => set({ signer: data }),
-      clearSigner: () => set({ signer: null }),
-    }),
-    {
-      name: 'signer-storage',
-    },
-  ),
+export const useSignerStore = createStore<SignerState>(
+  set => ({
+    signer: null,
+    setSigner: data => set({ signer: data }),
+    clearSigner: () => set({ signer: null }),
+  }),
+  {
+    name: 'signer-storage',
+  },
 );
