@@ -1,6 +1,6 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 
-import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -9,71 +9,80 @@ import { useSignerStore } from '@autopen/shared/store/useSignerStore';
 export default function HomeScreen() {
   const { signer } = useSignerStore();
 
-  console.log('>>>> sfaed', signer);
+  // Mock data for additional information
+  const validUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString(); // 1 year from now
+  const status = 'Active';
 
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
       headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
+        <FontAwesome name="certificate" size={100} color="#FFD700" style={styles.certificateIcon} />
       }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">haceme un cafe!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
+      <ThemedView style={styles.container}>
+        <ThemedText type="title">X509 Digital Signer Credential</ThemedText>
+        
+        <ThemedView style={styles.infoContainer}>
+          <InfoItem label="Name" value={signer ? `${signer.nombre} ${signer.apellido}` : 'N/A'} />
+          <InfoItem label="DNI" value={signer?.dni || 'N/A'} />
+          <InfoItem label="Company" value={signer?.compania || 'N/A'} />
+          <InfoItem label="Valid Until" value={validUntil} />
+          <InfoItem label="Status" value={status} />
+        </ThemedView>
+
+        <ThemedView style={styles.noteContainer}>
+          <ThemedText type="subtitle">Important Notes:</ThemedText>
+          <ThemedText>
+            1. Keep your credential information confidential.
+          </ThemedText>
+          <ThemedText>
+            2. Ensure your credential is up to date before signing documents.
+          </ThemedText>
+          <ThemedText>
+            3. Contact support if you notice any discrepancies in your information.
+          </ThemedText>
+        </ThemedView>
+
       </ThemedView>
     </ParallaxScrollView>
   );
 }
 
+function InfoItem({ label, value }: { label: string; value: string }) {
+  return (
+    <ThemedView style={styles.infoItem}>
+      <ThemedText type="defaultSemiBold">{label}:</ThemedText>
+      <ThemedText>{value}</ThemedText>
+    </ThemedView>
+  );
+}
+
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    padding: 16,
+    gap: 24,
+  },
+  infoContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+    padding: 16,
+    gap: 12,
+  },
+  infoItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  noteContainer: {
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  footer: {
+    textAlign: 'center',
+    marginTop: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  certificateIcon: {
     position: 'absolute',
+    bottom: 20,
+    right: 20,
   },
 });
+

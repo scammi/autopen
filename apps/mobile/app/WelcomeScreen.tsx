@@ -22,7 +22,6 @@ const WelcomeScreen = () => {
   });
 
   const handleLogin = () => {
-    console.log('>>>>');
     setSigner(formData);
     console.log(signer);
 
