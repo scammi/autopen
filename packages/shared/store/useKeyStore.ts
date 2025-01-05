@@ -2,57 +2,32 @@ import { createStore } from './createStore';
 import { KeyPair, KeyMetadata } from '../crypto/interfaces/types';
 
 interface KeyState {
-  activeKeyId: string | null;
-  keys: Record<
-    string,
-    {
-      metadata: KeyMetadata;
-      keyPair: KeyPair;
-    }
-  >;
+  key: {
+    metadata: KeyMetadata;
+    keyPair: KeyPair;
+  } | null;
+
   // Actions
-  saveKeyPair: (keyPair: KeyPair, metadata: KeyMetadata) => void;
-  getKeyPair: (
-    id: string,
-  ) => { metadata: KeyMetadata; keyPair: KeyPair } | null;
-  setActiveKey: (id: string) => void;
-  deleteKeyPair: (id: string) => void;
-  clearKeys: () => void;
+  saveKey: (keyPair: KeyPair, metadata: KeyMetadata) => void;
+  getKey: () => { metadata: KeyMetadata; keyPair: KeyPair } | null;
+  clearKey: () => void;
 }
 
 export const useKeyStore = createStore<KeyState>(
   (set, get) => ({
-    activeKeyId: null,
-    keys: {},
+    key: null,
 
-    saveKeyPair: (keyPair, metadata) =>
-      set((state) => ({
-        keys: {
-          ...state.keys,
-          [metadata.id]: { keyPair, metadata },
-        },
+    saveKey: (keyPair, metadata) =>
+      set(() => ({
+        key: { keyPair, metadata }
       })),
 
-    getKeyPair: (id) => {
+    getKey: () => {
       const state = get();
-      return state.keys[id] || null;
+      return state.key;
     },
 
-    setActiveKey: (id) =>
-      set((state) => ({
-        activeKeyId: state.keys[id] ? id : state.activeKeyId,
-      })),
-
-    deleteKeyPair: (id) =>
-      set((state) => {
-        const { [id]: _, ...remainingKeys } = state.keys;
-        return {
-          keys: remainingKeys,
-          activeKeyId: state.activeKeyId === id ? null : state.activeKeyId,
-        };
-      }),
-
-    clearKeys: () => set({ keys: {}, activeKeyId: null }),
+    clearKey: () => set({ key: null }),
   }),
   {
     name: 'key-storage',

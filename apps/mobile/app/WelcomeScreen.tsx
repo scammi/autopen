@@ -1,20 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import "react-native-get-random-values";
-import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from 'react-i18next';
 import { useSignerStore } from '@autopen/shared/store/useSignerStore';
-import { useKeyStore } from '@autopen/shared/store/useKeyStore';
-import { ViemCryptoProvider } from '@autopen/shared/crypto/providers/ViemCryptoProvider';
-import { KeyType } from '@autopen/shared/crypto/interfaces/types';
+import { KeyManager } from '@autopen/shared/crypto/KeyManager';
+import 'react-native-get-random-values';
 
 const WelcomeScreen = () => {
   const router = useRouter();
   const { t } = useTranslation();
 
   const { signer, setSigner } = useSignerStore();
-  const { saveKeyPair, setActiveKey } = useKeyStore();
 
   const lastNameRef = useRef<TextInput>(null);
   const dniRef = useRef<TextInput>(null);
@@ -29,25 +25,17 @@ const WelcomeScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const cryptoProvider = new ViemCryptoProvider();
+      const keyManager = new KeyManager();
+      await keyManager.create();
 
-      const keyPair = await cryptoProvider.generateKeyPair();
-      const metadata = {
-        id: uuidv4(),
-        createdAt: Date.now(),
-        keyType: KeyType.RSA,
-      };
-
-      await saveKeyPair(keyPair, metadata);
-
-      setActiveKey(metadata.id);
+      const testMessage = 'Hello, Autopen!';
+      const signature = await keyManager.sign(testMessage);
+      console.log('Test Message:', testMessage);
+      console.log('Signature:', signature);
 
       setSigner({
         ...formData,
       });
-
-      console.log('Key pair generated and stored successfully');
-      console.log('Public key:', keyPair.publicKey);
 
       router.push('/(tabs)');
     } catch (error) {
