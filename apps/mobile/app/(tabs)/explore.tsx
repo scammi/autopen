@@ -1,109 +1,209 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Alert } from 'react-native';
+import {
+  CameraView,
+  useCameraPermissions,
+  BarcodeScanningResult,
+} from 'expo-camera';
+import * as LocalAuthentication from 'expo-local-authentication';
+import { router } from 'expo-router';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { KeyManager } from '@autopen/shared/crypto/KeyManager';
+
+const keyManager = new KeyManager();
 
 export default function TabTwoScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
+  const [permission, requestPermission] = useCameraPermissions();
+  const [scanned, setScanned] = useState(false);
+  const [signing, setSigning] = useState(false);
+
+  if (!permission) {
+    return (
+      <ThemedView>
+        <ThemedText>Requesting camera permission...</ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText style={styles.message}>
+          We need your permission to use the camera
         </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
+        <ThemedText style={styles.button} onPress={requestPermission}>
+          Grant permission
         </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+      </ThemedView>
+    );
+  }
+
+  const handleBarCodeScanned = ({ type, data }: BarcodeScanningResult) => {
+    setScanned(true);
+    if (isValidQRCode(data)) {
+      Alert.alert(
+        'Valid QR Code',
+        'The scanned QR code is valid. Do you want to proceed?',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => setScanned(false),
+            style: 'cancel',
+          },
+          { text: 'OK', onPress: () => handleValidQRCode(data) },
+        ],
+      );
+    } else {
+      Alert.alert('Invalid QR Code', 'Please scan a valid QR code.', [
+        { text: 'OK', onPress: () => setScanned(false) },
+      ]);
+    }
+  };
+
+  const isValidQRCode = (data: string) => {
+    try {
+      console.log('data>>>', data)
+      return data.startsWith('autopen:') && data.split(':')[1].length > 0;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleValidQRCode = async (data: string) => {
+    try {
+      const hash = data.split(':')[1];
+
+      const auth = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Authenticate to sign document',
+        fallbackLabel: 'Use passcode',
+      });
+
+      if (!auth.success) {
+        Alert.alert('Authentication Failed', 'Please try again');
+        setScanned(false);
+        return;
+      }
+
+      Alert.alert(
+        'Confirm Signing',
+        `You are about to sign the following hash:\n\n${hash.slice(0, 20)}...`,
+        [
+          {
+            text: 'Cancel',
+            onPress: () => setScanned(false),
+            style: 'cancel',
+          },
+          {
+            text: 'Sign',
+            onPress: async () => {
+              try {
+                setSigning(true);
+                const signature = await keyManager.sign(hash);
+
+                Alert.alert(
+                  'Successfully Signed!',
+                  `Signature: ${signature.slice(0, 20)}...`,
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => {
+                        setScanned(false);
+                        router.push('/(tabs)');
+                      },
+                    },
+                  ],
+                );
+              } catch (error) {
+                Alert.alert('Error', 'Failed to sign document');
+                setScanned(false);
+              } finally {
+                setSigning(false);
+              }
+            },
+          },
+        ],
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to process QR code');
+      setScanned(false);
+    }
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <CameraView
+        style={styles.camera}
+        barcodeScannerSettings={{
+          barcodeTypes: ['qr'],
+        }}
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+      >
+        <View style={styles.overlay}>
+          <View style={styles.unfocusedContainer}></View>
+          <View style={styles.middleContainer}>
+            <View style={styles.unfocusedContainer}></View>
+            <View style={styles.focusedContainer}>
+              {scanned && !signing && (
+                <ThemedText
+                  style={styles.scanAgainText}
+                  onPress={() => setScanned(false)}
+                >
+                  Tap to Scan Again
+                </ThemedText>
+              )}
+              {signing && (
+                <ThemedText style={styles.scanAgainText}>
+                  Signing...
+                </ThemedText>
+              )}
+            </View>
+            <View style={styles.unfocusedContainer}></View>
+          </View>
+          <View style={styles.unfocusedContainer}></View>
+        </View>
+      </CameraView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
   },
-  titleContainer: {
+  camera: {
+    flex: 1,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  unfocusedContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  middleContainer: {
     flexDirection: 'row',
-    gap: 8,
+    flex: 1.5,
+  },
+  focusedContainer: {
+    flex: 6,
+  },
+  message: {
+    textAlign: 'center',
+    paddingBottom: 10,
+  },
+  button: {
+    alignSelf: 'center',
+    padding: 10,
+    backgroundColor: '#007AFF',
+    borderRadius: 5,
+  },
+  scanAgainText: {
+    textAlign: 'center',
+    padding: 16,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    color: 'white',
   },
 });
