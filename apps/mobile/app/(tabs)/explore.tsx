@@ -78,6 +78,7 @@ export default function TabTwoScreen() {
       const auth = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Authenticate to sign document',
         fallbackLabel: 'Use passcode',
+        disableDeviceFallback: true,
       });
 
       if (!auth.success) {
