@@ -56,7 +56,12 @@ export default function TabTwoScreen() {
 
   const handleBarCodeScanned = async ({ data }: BarcodeScanningResult) => {
     const timestamp = Date.now();
-    if (scanned || signing || (timestamp - lastScannedTimestampRef.current < SCAN_DEBOUNCE_MS)) {
+    if (
+      scanned ||
+      signing ||
+      !isActive ||
+      timestamp - lastScannedTimestampRef.current < SCAN_DEBOUNCE_MS
+    ) {
       return;
     }
 
