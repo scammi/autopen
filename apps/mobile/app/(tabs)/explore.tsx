@@ -6,27 +6,32 @@ import {
   BarcodeScanningResult,
 } from 'expo-camera';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { router } from 'expo-router';
-
+import { router, usePathname } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { KeyManager } from '@autopen/shared/crypto/KeyManager';
 
-const keyManager = new KeyManager();
-
 export default function TabTwoScreen() {
   const [permission, requestPermission] = useCameraPermissions();
+  const pathname = usePathname();
   const [scanned, setScanned] = useState(false);
   const [signing, setSigning] = useState(false);
+  const [isActive, setIsActive] = useState(true);
 
-  const canScan = !scanned && !signing;
+  const canScan = !scanned && !signing && isActive;
+
+  const keyManager = new KeyManager();
 
   useEffect(() => {
+    console.log(pathname);
+    setIsActive(pathname === '/explore');
+
     return () => {
       setScanned(false);
       setSigning(false);
+      setIsActive(false);
     };
-  }, []);
+  }, [pathname]);
 
   if (!permission) {
     return (
@@ -49,10 +54,11 @@ export default function TabTwoScreen() {
     );
   }
 
-  const handleBarCodeScanned = ({ type, data }: BarcodeScanningResult) => {
-    if (signing || scanned) return;
+  const handleBarCodeScanned = ({ data }: BarcodeScanningResult) => {
+    if (scanned) return;
 
     setScanned(true);
+
     if (isValidQRCode(data)) {
       Alert.alert(
         'Valid QR Code',
@@ -83,8 +89,6 @@ export default function TabTwoScreen() {
 
   const handleValidQRCode = async (data: string) => {
     try {
-      if (signing) return;
-
       const hash = data.split(':')[1];
 
       const auth = await LocalAuthentication.authenticateAsync({
@@ -101,7 +105,6 @@ export default function TabTwoScreen() {
 
       try {
         setSigning(true);
-        setScanned(true);
         const signature = await keyManager.sign(hash);
 
         Alert.alert(
@@ -113,7 +116,7 @@ export default function TabTwoScreen() {
               onPress: () => {
                 setSigning(false);
                 setScanned(false);
-                router.push('/');
+                router.push('/(tabs)');
               },
             },
           ],
@@ -143,19 +146,7 @@ export default function TabTwoScreen() {
           <View style={styles.unfocusedContainer}></View>
           <View style={styles.middleContainer}>
             <View style={styles.unfocusedContainer}></View>
-            <View style={styles.focusedContainer}>
-              {/* {scanned && !signing && (
-                <ThemedText
-                  style={styles.scanAgainText}
-                  onPress={() => setScanned(false)}
-                >
-                  Tap to Scan Again
-                </ThemedText>
-              )} */}
-              {/* {signing && (
-                <ThemedText style={styles.scanAgainText}>Signing...</ThemedText>
-              )} */}
-            </View>
+            <View style={styles.focusedContainer}></View>
             <View style={styles.unfocusedContainer}></View>
           </View>
           <View style={styles.unfocusedContainer}></View>
