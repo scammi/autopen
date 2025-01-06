@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
 import {
   CameraView,
@@ -11,19 +11,19 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { KeyManager } from '@autopen/shared/crypto/KeyManager';
 
+const SCAN_DEBOUNCE_MS = 2000; // 2 second debounce
+
 export default function TabTwoScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const pathname = usePathname();
   const [scanned, setScanned] = useState(false);
   const [signing, setSigning] = useState(false);
   const [isActive, setIsActive] = useState(true);
-
-  const canScan = !scanned && !signing && isActive;
+  const lastScannedTimestampRef = useRef(0);
 
   const keyManager = new KeyManager();
 
   useEffect(() => {
-    console.log(pathname);
     setIsActive(pathname === '/explore');
 
     return () => {
@@ -54,9 +54,13 @@ export default function TabTwoScreen() {
     );
   }
 
-  const handleBarCodeScanned = ({ data }: BarcodeScanningResult) => {
-    if (scanned) return;
+  const handleBarCodeScanned = async ({ data }: BarcodeScanningResult) => {
+    const timestamp = Date.now();
+    if (scanned || signing || (timestamp - lastScannedTimestampRef.current < SCAN_DEBOUNCE_MS)) {
+      return;
+    }
 
+    lastScannedTimestampRef.current = timestamp;
     setScanned(true);
 
     if (isValidQRCode(data)) {
@@ -71,11 +75,17 @@ export default function TabTwoScreen() {
           },
           { text: 'OK', onPress: () => handleValidQRCode(data) },
         ],
+        { cancelable: false }
       );
     } else {
-      Alert.alert('Invalid QR Code', 'Please scan a valid QR code.', [
-        { text: 'OK', onPress: () => setScanned(false) },
-      ]);
+      Alert.alert(
+        'Invalid QR Code', 
+        'Please scan a valid QR code.', 
+        [
+          { text: 'OK', onPress: () => setScanned(false) }
+        ],
+        { cancelable: false }
+      );
     }
   };
 
@@ -120,12 +130,12 @@ export default function TabTwoScreen() {
               },
             },
           ],
+          { cancelable: false }
         );
       } catch (error) {
         Alert.alert('Error', 'Failed to sign document');
-        setScanned(false);
-      } finally {
         setSigning(false);
+        setScanned(false);
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to process QR code');
@@ -140,7 +150,7 @@ export default function TabTwoScreen() {
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
         }}
-        onBarcodeScanned={canScan ? handleBarCodeScanned : undefined}
+        onBarcodeScanned={!signing ? handleBarCodeScanned : undefined}
       >
         <View style={styles.overlay}>
           <View style={styles.unfocusedContainer}></View>
