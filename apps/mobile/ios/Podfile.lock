@@ -1,16 +1,8 @@
 PODS:
   - boost (1.84.0)
   - DoubleConversion (1.1.6)
-  - EXBarCodeScanner (13.0.1):
-    - EXImageLoader
-    - ExpoModulesCore
-    - ZXingObjC/OneD
-    - ZXingObjC/PDF417
   - EXConstants (17.0.3):
     - ExpoModulesCore
-  - EXImageLoader (4.7.0):
-    - ExpoModulesCore
-    - React-Core
   - EXJSONUtils (0.14.0)
   - EXManifests (0.15.4):
     - ExpoModulesCore
@@ -2062,9 +2054,7 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
-  - "EXBarCodeScanner (from `../../../node_modules/.pnpm/expo-barcode-scanner@13.0.1_expo@52.0.23_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+c_6zsped2mirj7yts4zlvasn3jkq/node_modules/expo-barcode-scanner/ios`)"
   - "EXConstants (from `../../../node_modules/.pnpm/expo-constants@17.0.3_expo@52.0.23_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@7._z5lxbqoehwoxmmw56g2luuzx5e/node_modules/expo-constants/ios`)"
-  - "EXImageLoader (from `../../../node_modules/.pnpm/expo-image-loader@4.7.0_expo@52.0.23_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@_po6acdomf7nucjynwsqoiasxe4/node_modules/expo-image-loader/ios`)"
   - "EXJSONUtils (from `../../../node_modules/.pnpm/expo-json-utils@0.14.0/node_modules/expo-json-utils/ios`)"
   - "EXManifests (from `../../../node_modules/.pnpm/expo-manifests@0.15.4_expo@52.0.23_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@7._czfnf5qf72vw2jgqkmm5fbeaya/node_modules/expo-manifests/ios`)"
   - "Expo (from `../../../node_modules/.pnpm/expo@52.0.23_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@7.26.0__@expo+metro-runt_7bexnbuyjkgns6jkjsoybnqy3m/node_modules/expo`)"
@@ -2170,12 +2160,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
-  EXBarCodeScanner:
-    :path: "../../../node_modules/.pnpm/expo-barcode-scanner@13.0.1_expo@52.0.23_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+c_6zsped2mirj7yts4zlvasn3jkq/node_modules/expo-barcode-scanner/ios"
   EXConstants:
     :path: "../../../node_modules/.pnpm/expo-constants@17.0.3_expo@52.0.23_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@7._z5lxbqoehwoxmmw56g2luuzx5e/node_modules/expo-constants/ios"
-  EXImageLoader:
-    :path: "../../../node_modules/.pnpm/expo-image-loader@4.7.0_expo@52.0.23_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@_po6acdomf7nucjynwsqoiasxe4/node_modules/expo-image-loader/ios"
   EXJSONUtils:
     :path: "../../../node_modules/.pnpm/expo-json-utils@0.14.0/node_modules/expo-json-utils/ios"
   EXManifests:
@@ -2365,9 +2351,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
-  EXBarCodeScanner: e2dd9b42c1b522a2adc9202b1dfbc64cb34456d1
   EXConstants: dd2fe64c6cdb1383b694c309a63028a8e9f2be6d
-  EXImageLoader: ab589d67d6c5f2c33572afea9917304418566334
   EXJSONUtils: 01fc7492b66c234e395dcffdd5f53439c5c29c93
   EXManifests: f30a0c5d3d6cad8db9c01bab579e0aa0df5d3cb2
   Expo: 37cea4167605a3a1b88fa0caf8349ae76c0d389c

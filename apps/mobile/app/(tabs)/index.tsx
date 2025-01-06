@@ -10,20 +10,29 @@ export default function HomeScreen() {
   const { signer } = useSignerStore();
 
   // Mock data for additional information
-  const validUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString(); // 1 year from now
+  const validUntil = new Date(
+    Date.now() + 365 * 24 * 60 * 60 * 1000,
+  ).toLocaleDateString(); // 1 year from now
   const status = 'Active';
 
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
       headerImage={
-        <FontAwesome name="certificate" size={100} color="#FFD700" style={styles.certificateIcon} />
+        <FontAwesome
+          name="certificate"
+          size={100}
+          color="#FFD700"
+          style={styles.certificateIcon}
+        />
       }>
       <ThemedView style={styles.container}>
         <ThemedText type="title">X509 Digital Signer Credential</ThemedText>
-        
         <ThemedView style={styles.infoContainer}>
-          <InfoItem label="Name" value={signer ? `${signer.nombre} ${signer.apellido}` : 'N/A'} />
+          <InfoItem
+            label="Name"
+            value={signer ? `${signer.nombre} ${signer.apellido}` : 'N/A'}
+          />
           <InfoItem label="DNI" value={signer?.dni || 'N/A'} />
           <InfoItem label="Company" value={signer?.compania || 'N/A'} />
           <InfoItem label="Valid Until" value={validUntil} />

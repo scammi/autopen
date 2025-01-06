@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
 import {
   CameraView,
@@ -18,6 +18,15 @@ export default function TabTwoScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [signing, setSigning] = useState(false);
+
+  const canScan = !scanned && !signing;
+
+  useEffect(() => {
+    return () => {
+      setScanned(false);
+      setSigning(false);
+    };
+  }, []);
 
   if (!permission) {
     return (
@@ -41,6 +50,8 @@ export default function TabTwoScreen() {
   }
 
   const handleBarCodeScanned = ({ type, data }: BarcodeScanningResult) => {
+    if (signing || scanned) return;
+
     setScanned(true);
     if (isValidQRCode(data)) {
       Alert.alert(
@@ -64,7 +75,6 @@ export default function TabTwoScreen() {
 
   const isValidQRCode = (data: string) => {
     try {
-      console.log('data>>>', data)
       return data.startsWith('autopen:') && data.split(':')[1].length > 0;
     } catch {
       return false;
@@ -73,6 +83,8 @@ export default function TabTwoScreen() {
 
   const handleValidQRCode = async (data: string) => {
     try {
+      if (signing) return;
+
       const hash = data.split(':')[1];
 
       const auth = await LocalAuthentication.authenticateAsync({
@@ -87,45 +99,31 @@ export default function TabTwoScreen() {
         return;
       }
 
-      Alert.alert(
-        'Confirm Signing',
-        `You are about to sign the following hash:\n\n${hash.slice(0, 20)}...`,
-        [
-          {
-            text: 'Cancel',
-            onPress: () => setScanned(false),
-            style: 'cancel',
-          },
-          {
-            text: 'Sign',
-            onPress: async () => {
-              try {
-                setSigning(true);
-                const signature = await keyManager.sign(hash);
+      try {
+        setSigning(true);
+        setScanned(true);
+        const signature = await keyManager.sign(hash);
 
-                Alert.alert(
-                  'Successfully Signed!',
-                  `Signature: ${signature.slice(0, 20)}...`,
-                  [
-                    {
-                      text: 'OK',
-                      onPress: () => {
-                        setScanned(false);
-                        router.push('/(tabs)');
-                      },
-                    },
-                  ],
-                );
-              } catch (error) {
-                Alert.alert('Error', 'Failed to sign document');
-                setScanned(false);
-              } finally {
+        Alert.alert(
+          'Successfully Signed!',
+          `Signature: ${signature.slice(0, 20)}...`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
                 setSigning(false);
-              }
+                setScanned(false);
+                router.push('/');
+              },
             },
-          },
-        ],
-      );
+          ],
+        );
+      } catch (error) {
+        Alert.alert('Error', 'Failed to sign document');
+        setScanned(false);
+      } finally {
+        setSigning(false);
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to process QR code');
       setScanned(false);
@@ -139,26 +137,24 @@ export default function TabTwoScreen() {
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
         }}
-        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        onBarcodeScanned={canScan ? handleBarCodeScanned : undefined}
       >
         <View style={styles.overlay}>
           <View style={styles.unfocusedContainer}></View>
           <View style={styles.middleContainer}>
             <View style={styles.unfocusedContainer}></View>
             <View style={styles.focusedContainer}>
-              {scanned && !signing && (
+              {/* {scanned && !signing && (
                 <ThemedText
                   style={styles.scanAgainText}
                   onPress={() => setScanned(false)}
                 >
                   Tap to Scan Again
                 </ThemedText>
-              )}
-              {signing && (
-                <ThemedText style={styles.scanAgainText}>
-                  Signing...
-                </ThemedText>
-              )}
+              )} */}
+              {/* {signing && (
+                <ThemedText style={styles.scanAgainText}>Signing...</ThemedText>
+              )} */}
             </View>
             <View style={styles.unfocusedContainer}></View>
           </View>
