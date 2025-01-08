@@ -9,7 +9,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { router, usePathname } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { KeyManager } from '@autopen/shared/crypto/KeyManager';
+import { KeyManager } from '@autopen/shared/crypto/key-managers/key-manager-viem';
 
 const SCAN_DEBOUNCE_MS = 2000; // 2 second debounce
 
@@ -86,9 +86,7 @@ export default function TabTwoScreen() {
       Alert.alert(
         'Invalid QR Code', 
         'Please scan a valid QR code.', 
-        [
-          { text: 'OK', onPress: () => setScanned(false) }
-        ],
+        [{ text: 'OK', onPress: () => setScanned(false) }],
         { cancelable: false }
       );
     }

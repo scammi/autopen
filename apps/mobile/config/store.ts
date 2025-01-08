@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { setPersistStorage } from '@autopen/shared/store/createStore';
+import { setPersistStorage } from '@autopen/shared/store/create-store';
 
 export function createPersistStorage() {
   return {

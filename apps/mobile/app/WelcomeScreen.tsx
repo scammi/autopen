@@ -2,8 +2,8 @@ import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { useSignerStore } from '@autopen/shared/store/useSignerStore';
-import { KeyManager } from '@autopen/shared/crypto/KeyManager';
+import { useSignerStore } from '@autopen/shared/store/use-signer-store';
+import { KeyManager } from '@autopen/shared/crypto/key-managers/key-manager-viem';
 import 'react-native-get-random-values';
 
 const WelcomeScreen = () => {

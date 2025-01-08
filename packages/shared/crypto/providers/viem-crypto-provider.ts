@@ -1,4 +1,4 @@
-import { ICryptoProvider } from '../interfaces/ICryptoProvider';
+import { ICryptoProvider } from '../interfaces/crypto-provider.interface';
 import { KeyPair, SignatureOptions } from '../interfaces/types';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { toHex, recoverMessageAddress } from 'viem';

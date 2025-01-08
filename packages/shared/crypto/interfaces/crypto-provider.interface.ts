@@ -1,4 +1,18 @@
-import { KeyPair, SignatureOptions } from './types';
+export interface IKeyPair {
+  publicKey: string;
+  privateKey: string;
+}
+
+export interface IKeyMetadata {
+  id: string;
+  createdAt: number;
+  keyType: KeyType;
+}
+
+export interface SignatureOptions {
+  algorithm?: string;
+  hashAlgorithm?: string;
+}
 
 export interface ICryptoProvider {
   /**
@@ -7,7 +21,7 @@ export interface ICryptoProvider {
   generateKeyPair(options?: {
     type?: 'RSA' | 'EC';
     keySize?: number;
-  }): Promise<KeyPair>;
+  }): Promise<IKeyPair>;
 
   /**
    * Creates a cryptographic signature
@@ -32,4 +46,8 @@ export interface ICryptoProvider {
    * Derives public key from private key
    */
   getPublicKey(privateKey: string): Promise<string>;
+}
+
+export enum KeyType {
+  RSA = 'RSA',
 }

@@ -1,9 +1,9 @@
-export interface KeyPair {
+export interface IKeyPair {
   publicKey: string;
   privateKey: string;
 }
 
-export interface KeyMetadata {
+export interface IKeyMetadata {
   id: string;
   createdAt: number;
   keyType: KeyType;

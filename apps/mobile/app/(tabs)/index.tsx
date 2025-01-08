@@ -4,7 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useSignerStore } from '@autopen/shared/store/useSignerStore';
+import { useSignerStore } from '@autopen/shared/store/use-signer-store';
 
 export default function HomeScreen() {
   const { signer } = useSignerStore();
