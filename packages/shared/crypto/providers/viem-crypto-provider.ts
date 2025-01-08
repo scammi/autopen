@@ -1,10 +1,10 @@
 import { ICryptoProvider } from '../interfaces/crypto-provider.interface';
-import { KeyPair, SignatureOptions } from '../interfaces/types';
+import { IKeyPair, SignatureOptions } from '../interfaces/types';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { toHex, recoverMessageAddress } from 'viem';
 
 export class ViemCryptoProvider implements ICryptoProvider {
-  async generateKeyPair(): Promise<KeyPair> {
+  async generateKeyPair(): Promise<IKeyPair> {
     const privateKey = generatePrivateKey();
     const account = privateKeyToAccount(privateKey);
 

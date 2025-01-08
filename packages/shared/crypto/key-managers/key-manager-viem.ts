@@ -3,14 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useKeyStore } from '../../store/use-key-store';
 import { KeyType } from '../interfaces/types';
 import { ViemCryptoProvider } from '../providers/viem-crypto-provider';
-
-interface IKeyManager {
-  create(): Promise<void>;
-  sign(message: string): Promise<string>;
-  verify(message: string, signature: string): Promise<boolean>;
-  getPublicKey(): string;
-  getPrivateKey(): string;
-}
+import { IKeyManager } from '../interfaces/key-manager-interfase';
 
 export class KeyManager implements IKeyManager {
   private cryptoProvider: ViemCryptoProvider;

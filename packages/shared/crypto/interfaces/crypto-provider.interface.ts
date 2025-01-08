@@ -50,4 +50,5 @@ export interface ICryptoProvider {
 
 export enum KeyType {
   RSA = 'RSA',
+  P12 = 'P12',
 }
