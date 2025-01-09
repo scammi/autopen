@@ -53,10 +53,10 @@ export class P12CryptoProvider implements ICryptoProvider {
   }
 
   async sign(
-    message: string | Uint8Array,
+    message: string | Uint8Array | Buffer,
     privateKeyPem: string,
     options?: SignatureOptions,
-  ): Promise<string> {
+  ): Promise<string | Buffer> {
     try {
       const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
       const messageString =

@@ -1,9 +1,9 @@
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { useKeyStore } from '../../store/use-key-store';
-import { KeyType } from '../interfaces/types';
 import { ViemCryptoProvider } from '../providers/viem-crypto-provider';
 import { IKeyManager } from '../interfaces/key-manager-interfase';
+import { KeyType } from '../interfaces/crypto-provider.interface';
 
 export class KeyManager implements IKeyManager {
   private cryptoProvider: ViemCryptoProvider;

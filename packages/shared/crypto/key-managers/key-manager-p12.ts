@@ -36,7 +36,7 @@ export class P12KeyManager implements IKeyManager {
     }
   }
 
-  async sign(message: string): Promise<string> {
+  async sign(message: string): Promise<string | Buffer> {
     const key = this.keyStore.getState().getKey();
     if (!key) throw new Error('No key available');
     return this.cryptoProvider.sign(message, key.keyPair.privateKey);

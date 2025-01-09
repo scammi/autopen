@@ -27,10 +27,11 @@ export interface ICryptoProvider {
    * Creates a cryptographic signature
    */
   sign(
-    message: string | Uint8Array,
+    message: string | Uint8Array | Buffer,
     privateKey: string,
+    certificates?: string[],
     options?: SignatureOptions,
-  ): Promise<string>;
+  ): Promise<string | Buffer>;
 
   /**
    * Verifies a cryptographic signature
