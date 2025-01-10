@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView } from 'react-native';
+
+import * as DocumentPicker from 'expo-document-picker';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 type DocumentMetadata = {
@@ -10,16 +19,29 @@ type DocumentMetadata = {
 };
 
 export default function DocumentSigningView() {
-  const [currentStep, setCurrentStep] = useState<'upload' | 'review' | 'sign' | 'share'>('upload');
-  const [documentMetadata, setDocumentMetadata] = useState<DocumentMetadata | null>(null);
+  const [currentStep, setCurrentStep] = useState<
+    'upload' | 'review' | 'sign' | 'share'
+  >('upload');
+  const [documentMetadata, setDocumentMetadata] =
+    useState<DocumentMetadata | null>(null);
 
-  const handleUpload = () => {
-    // Simulating document upload and metadata extraction
+  const handleUpload = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: 'application/pdf', // Restrict to PDF files
+      copyToCacheDirectory: true, // This ensures we get a local URI we can use
+    });
+
+    if (result.canceled) {
+      console.log('User cancelled document picker');
+      return;
+    }
+
+    const pickedFile = result.assets[0];
     setDocumentMetadata({
-      name: 'Contract_2023.pdf',
-      type: 'application/pdf',
-      size: '2.5 MB',
-      lastModified: '2023-05-15 14:30:00',
+      name: pickedFile.name,
+      type: pickedFile.mimeType || 'application/pdf',
+      size: `${(pickedFile.size / (1024 * 1024)).toFixed(2)} MB`,
+      lastModified: new Date().toISOString(),
     });
     setCurrentStep('review');
   };
@@ -47,7 +69,10 @@ export default function DocumentSigningView() {
       case 'upload':
         return (
           <View style={styles.stepContainer}>
-            <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
+            <TouchableOpacity
+              style={styles.uploadButton}
+              onPress={handleUpload}
+            >
               <Ionicons name="cloud-upload-outline" size={48} color="#007AFF" />
               <Text style={styles.uploadText}>Upload Document</Text>
             </TouchableOpacity>
@@ -63,7 +88,10 @@ export default function DocumentSigningView() {
                   <MetadataItem label="Name" value={documentMetadata.name} />
                   <MetadataItem label="Type" value={documentMetadata.type} />
                   <MetadataItem label="Size" value={documentMetadata.size} />
-                  <MetadataItem label="Last Modified" value={documentMetadata.lastModified} />
+                  <MetadataItem
+                    label="Last Modified"
+                    value={documentMetadata.lastModified}
+                  />
                 </View>
               )}
               <Text style={styles.sectionTitle}>Additional Information</Text>
@@ -72,11 +100,11 @@ export default function DocumentSigningView() {
                 placeholder="Document Description"
                 multiline
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Signing Purpose"
-              />
-              <TouchableOpacity style={styles.actionButton} onPress={handleSign}>
+              <TextInput style={styles.input} placeholder="Signing Purpose" />
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleSign}
+              >
                 <Text style={styles.actionButtonText}>Proceed to Sign</Text>
               </TouchableOpacity>
             </View>
@@ -89,7 +117,10 @@ export default function DocumentSigningView() {
             <View style={styles.signatureArea}>
               <Text style={styles.signatureText}>Your Signature Here</Text>
             </View>
-            <TouchableOpacity style={styles.actionButton} onPress={handleFinishSigning}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleFinishSigning}
+            >
               <Text style={styles.actionButtonText}>Finish Signing</Text>
             </TouchableOpacity>
           </View>
@@ -98,13 +129,21 @@ export default function DocumentSigningView() {
         return (
           <View style={styles.stepContainer}>
             <Ionicons name="checkmark-circle" size={64} color="#4CAF50" />
-            <Text style={styles.successText}>Document Signed Successfully!</Text>
+            <Text style={styles.successText}>
+              Document Signed Successfully!
+            </Text>
             <View style={styles.buttonGroup}>
-              <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+              <TouchableOpacity
+                style={styles.shareButton}
+                onPress={handleShare}
+              >
                 <Ionicons name="share-outline" size={24} color="#FFFFFF" />
                 <Text style={styles.shareButtonText}>Share</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.downloadButton} onPress={handleDownload}>
+              <TouchableOpacity
+                style={styles.downloadButton}
+                onPress={handleDownload}
+              >
                 <Ionicons name="download-outline" size={24} color="#FFFFFF" />
                 <Text style={styles.downloadButtonText}>Download</Text>
               </TouchableOpacity>
@@ -268,4 +307,3 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 });
-

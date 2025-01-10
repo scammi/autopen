@@ -1,4 +1,4 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -48,10 +48,10 @@ export default function HomeScreen() {
             2. Ensure your credential is up to date before signing documents.
           </ThemedText>
           <ThemedText>
-            3. Contact support if you notice any discrepancies in your information.
+            3. Contact support if you notice any discrepancies in your
+            information.
           </ThemedText>
         </ThemedView>
-
       </ThemedView>
     </ParallaxScrollView>
   );
@@ -94,4 +94,3 @@ const styles = StyleSheet.create({
     right: 20,
   },
 });
-
