@@ -34,7 +34,7 @@ describe('P12KeyManager', () => {
     await p12Manager.create();
     const message = 'Test message';
     const signature = await p12Manager.sign(message);
-    const isValid = await p12Manager.verify(message, signature);
+    const isValid = await p12Manager.verify(message, signature as string);
     expect(isValid).toBe(true);
   });
 
@@ -43,7 +43,7 @@ describe('P12KeyManager', () => {
     const message = 'Test message';
     const wrongMessage = 'Wrong message';
     const signature = await p12Manager.sign(message);
-    const isValid = await p12Manager.verify(wrongMessage, signature);
+    const isValid = await p12Manager.verify(wrongMessage, signature as string);
     expect(isValid).toBe(false);
   });
 
