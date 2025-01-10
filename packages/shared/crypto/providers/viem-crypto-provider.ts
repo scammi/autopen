@@ -20,6 +20,7 @@ export class ViemCryptoProvider implements ICryptoProvider {
   async sign(
     message: string | Uint8Array | Buffer,
     privateKey: string,
+    certificates?: string[],
     options?: SignatureOptions,
   ): Promise<string> {
     const account = privateKeyToAccount(privateKey as `0x${string}`);

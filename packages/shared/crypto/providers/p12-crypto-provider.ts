@@ -55,6 +55,7 @@ export class P12CryptoProvider implements ICryptoProvider {
   async sign(
     message: string | Uint8Array | Buffer,
     privateKeyPem: string,
+    certificates?: string[],
     options?: SignatureOptions,
   ): Promise<string | Buffer> {
     try {
