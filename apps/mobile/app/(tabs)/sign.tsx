@@ -69,21 +69,14 @@ export default function DocumentSigningView() {
     }
 
     const p12Uri = `${FileSystem.documentDirectory}test.p12`;
-    console.log('Asset URI:', assetUri);
-    console.log('Destination URI:', p12Uri);
 
-    // Check if file exists
     const fileInfo = await FileSystem.getInfoAsync(p12Uri);
-    console.log('File info:', fileInfo);
-
-    console.log('>>>>>> 2');
     if (!fileInfo.exists) {
       // Copy from asset to document directory
       await FileSystem.copyAsync({
         from: assetUri,
         to: p12Uri,
       });
-      console.log('File copied successfully');
     }
 
     const base64Content = await FileSystem.readAsStringAsync(p12Uri, {
@@ -98,9 +91,9 @@ export default function DocumentSigningView() {
     await signer.initialize();
 
     const signature = signer.sign(documentMetadata.buffer);
-
     console.log('>>>>>', signature);
-    // setCurrentStep('sign');
+
+    setCurrentStep('sign');
   };
 
   const handleShare = () => {
