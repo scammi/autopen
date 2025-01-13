@@ -6,13 +6,13 @@ type P12Options = {
 };
 
 export class P12Signer implements ISigner {
-  p12Buffer: Buffer;
+  p12Buffer: Uint8Array | Buffer;
   passphrase?: string;
 
   cert: forge.pki.Certificate;
   privateKey: forge.pki.PrivateKey;
 
-  constructor(p12Buffer: Buffer, options: P12Options = {}) {
+  constructor(p12Buffer: Uint8Array | Buffer, options: P12Options = {}) {
     this.p12Buffer = p12Buffer;
     this.passphrase = options.passphrase;
   }
@@ -29,7 +29,10 @@ export class P12Signer implements ISigner {
     certificate: forge.pki.Certificate;
   }> {
     try {
-      const p12Der = forge.util.createBuffer(this.p12Buffer.toString('binary'));
+      const binaryString = Array.from(this.p12Buffer)
+        .map(byte => String.fromCharCode(byte))
+        .join('');
+      const p12Der = forge.util.createBuffer(binaryString);
       const p12Asn1 = forge.asn1.fromDer(p12Der);
       const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, false, this.passphrase);
 
@@ -55,8 +58,11 @@ export class P12Signer implements ISigner {
     }
   }
 
-  async sign(content: Buffer, signingTime: Date = new Date()): Promise<Buffer> {
-    if (!(content instanceof Buffer)) {
+  async sign(
+    content: Uint8Array | Buffer,
+    signingTime: Date = new Date(),
+  ): Promise<Buffer | Uint8Array> {
+    if (!(content instanceof Uint8Array) && !Buffer.isBuffer(content)) {
       throw new Error('Content expected as Buffer');
     }
 
@@ -64,9 +70,12 @@ export class P12Signer implements ISigner {
       throw new Error('Signer not initialized. Call initialize() first');
     }
 
-    const p7 = forge.pkcs7.createSignedData();
+    const binaryString = Array.from(content)
+      .map(byte => String.fromCharCode(byte))
+      .join('');
 
-    p7.content = forge.util.createBuffer(content.toString('binary'));
+    const p7 = forge.pkcs7.createSignedData();
+    p7.content = forge.util.createBuffer(binaryString);
 
     p7.addCertificate(this.cert);
 
@@ -90,7 +99,7 @@ export class P12Signer implements ISigner {
     });
 
     p7.sign({ detached: true });
-
-    return Buffer.from(forge.asn1.toDer(p7.toAsn1()).getBytes(), 'binary');
+    const derBytes = forge.asn1.toDer(p7.toAsn1()).getBytes();
+    return new Uint8Array(derBytes.split('').map(c => c.charCodeAt(0)));
   }
 }

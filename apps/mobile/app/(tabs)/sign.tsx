@@ -89,10 +89,18 @@ export default function DocumentSigningView() {
     const base64Content = await FileSystem.readAsStringAsync(p12Uri, {
       encoding: FileSystem.EncodingType.Base64,
     });
+    const p12Buffer = Buffer.from(base64Content, 'base64');
 
-    console.log(base64Content);
+    const signer = new P12Signer(p12Buffer, {
+      passphrase: 'firmasoftware', // Add your P12 passphrase if required
+    });
 
-    setCurrentStep('sign');
+    await signer.initialize();
+
+    const signature = signer.sign(documentMetadata.buffer);
+
+    console.log('>>>>>', signature);
+    // setCurrentStep('sign');
   };
 
   const handleShare = () => {
