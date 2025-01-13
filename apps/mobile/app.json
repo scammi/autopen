@@ -8,6 +8,7 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -57,9 +58,12 @@
         }
       ],
       [
-        "expo-document-picker",
+        "expo-document-picker"
+      ],
+      [
+        "expo-asset",
         {
-          "iCloudContainerEnvironment": "Production"
+          "assets": ["apps/mobile/assets", "apps/mobile/assets/test.p12"]
         }
       ]
     ],

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import { Buffer } from '@craftzdog/react-native-buffer';
 import {
   View,
   Text,
@@ -10,12 +11,15 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { P12Signer } from '@autopen/shared/crypto/signers/p12.signer';
+import { Asset } from 'expo-asset';
 
 type DocumentMetadata = {
   name: string;
   type: string;
   size: string;
   lastModified: string;
+  buffer: Buffer;
 };
 
 export default function DocumentSigningView() {
@@ -37,21 +41,58 @@ export default function DocumentSigningView() {
     }
 
     const pickedFile = result.assets[0];
+    const base64 = await FileSystem.readAsStringAsync(pickedFile.uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    const buffer = Buffer.from(base64, 'base64');
+
     setDocumentMetadata({
       name: pickedFile.name,
       type: pickedFile.mimeType || 'application/pdf',
       size: `${(pickedFile.size / (1024 * 1024)).toFixed(2)} MB`,
       lastModified: new Date().toISOString(),
+      buffer: buffer,
     });
     setCurrentStep('review');
   };
 
-  const handleSign = () => {
-    setCurrentStep('sign');
-  };
+  const handleSign = async () => {
+    if (!documentMetadata?.buffer) {
+      throw new Error('No document loaded');
+    }
 
-  const handleFinishSigning = () => {
-    setCurrentStep('share');
+    const asset = await Asset.loadAsync(require('../../assets/test.p12'));
+    const assetUri = asset[0].localUri;
+    if (!assetUri) {
+      throw new Error('Failed to load p12 asset');
+    }
+
+    const p12Uri = `${FileSystem.documentDirectory}test.p12`;
+    console.log('Asset URI:', assetUri);
+    console.log('Destination URI:', p12Uri);
+
+    // Check if file exists
+    const fileInfo = await FileSystem.getInfoAsync(p12Uri);
+    console.log('File info:', fileInfo);
+
+    console.log('>>>>>> 2');
+    if (!fileInfo.exists) {
+      // Copy from asset to document directory
+      await FileSystem.copyAsync({
+        from: assetUri,
+        to: p12Uri,
+      });
+      console.log('File copied successfully');
+    }
+
+    const base64Content = await FileSystem.readAsStringAsync(p12Uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    console.log(base64Content);
+
+    setCurrentStep('sign');
   };
 
   const handleShare = () => {
@@ -105,25 +146,10 @@ export default function DocumentSigningView() {
                 style={styles.actionButton}
                 onPress={handleSign}
               >
-                <Text style={styles.actionButtonText}>Proceed to Sign</Text>
+                <Text style={styles.actionButtonText}>Sign</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
-        );
-      case 'sign':
-        return (
-          <View style={styles.stepContainer}>
-            <Text style={styles.sectionTitle}>Sign Document</Text>
-            <View style={styles.signatureArea}>
-              <Text style={styles.signatureText}>Your Signature Here</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleFinishSigning}
-            >
-              <Text style={styles.actionButtonText}>Finish Signing</Text>
-            </TouchableOpacity>
-          </View>
         );
       case 'share':
         return (
