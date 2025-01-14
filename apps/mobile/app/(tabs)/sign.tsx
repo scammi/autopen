@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import {
   View,
   Text,
@@ -19,7 +20,7 @@ type DocumentMetadata = {
   type: string;
   size: string;
   lastModified: string;
-  buffer: Buffer | Uint8Array;
+  buffer: Buffer;
 };
 
 export default function DocumentSigningView() {
@@ -85,13 +86,12 @@ export default function DocumentSigningView() {
     const p12Buffer = Buffer.from(base64Content, 'base64');
 
     const signer = new P12Signer(p12Buffer, {
-      passphrase: 'firmasoftware', // Add your P12 passphrase if required
+      passphrase: 'firmasoftware', // TODO MOVE TO ENV.
     });
 
     await signer.initialize();
     const pdfSigner = new PDFSigner();
     const signedPdf = await pdfSigner.sign(documentMetadata.buffer, signer);
-    console.log(signedPdf);
 
     // Save signed PDF to file system
     const signedFileName = `signed_${documentMetadata.name}`;
@@ -111,7 +111,7 @@ export default function DocumentSigningView() {
       name: signedFileName,
     });
 
-    setCurrentStep('sign');
+    setCurrentStep('share');
   };
 
   const handleShare = () => {
@@ -119,9 +119,32 @@ export default function DocumentSigningView() {
     alert('Sharing document...');
   };
 
-  const handleDownload = () => {
-    // Placeholder for download logic
-    alert('Downloading document...');
+  const handleDownload = async () => {
+    if (!documentMetadata?.name) {
+      alert('No signed document available');
+      return;
+    }
+
+    try {
+      const signedFilePath = `${FileSystem.documentDirectory}${documentMetadata.name}`;
+
+      // Check if sharing is available on the device
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        alert('Sharing is not available on this device');
+        return;
+      }
+
+      // Share/save the file
+      await Sharing.shareAsync(signedFilePath, {
+        mimeType: 'application/pdf',
+        dialogTitle: 'Save PDF',
+        UTI: 'com.adobe.pdf', // for iOS
+      });
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      alert('Error downloading file');
+    }
   };
 
   const renderStep = () => {
