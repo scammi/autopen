@@ -103,28 +103,6 @@ describe('PDFSigner', () => {
     );
   });
 
-  it('should accept both Buffer and Uint8Array inputs', async () => {
-    const uint8ArrayPdf = new Uint8Array(pdfBuffer);
-
-    const signedFromBuffer = await pdfSigner.sign(pdfBuffer, p12Signer);
-    const signedFromUint8Array = await pdfSigner.sign(uint8ArrayPdf, p12Signer);
-
-    // Save both versions for comparison
-    const fixturesDir = path.join(__dirname, '..', '__fixtures__');
-    fs.writeFileSync(
-      path.join(fixturesDir, 'test-signed-buffer.pdf'),
-      Buffer.from(signedFromBuffer),
-    );
-    fs.writeFileSync(
-      path.join(fixturesDir, 'test-signed-uint8array.pdf'),
-      Buffer.from(signedFromUint8Array),
-    );
-
-    expect(Buffer.from(signedFromBuffer)).toEqual(
-      Buffer.from(signedFromUint8Array),
-    );
-  });
-
   it('should throw error with uninitialized signer', async () => {
     const uninitializedSigner = new P12Signer(Buffer.from('test'));
     await expect(

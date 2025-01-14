@@ -34,10 +34,10 @@ export class PDFSigner {
   }
 
   async sign(
-    pdfBuffer: Buffer | Uint8Array,
+    pdfBuffer: Buffer,
     signer: P12Signer,
     options: SigningOptions = {},
-  ): Promise<Uint8Array> {
+  ): Promise<Buffer> {
     try {
       if (!signer.privateKey || !signer.cert) {
         throw new Error('Signer not initialized. Call initialize() first');
@@ -148,7 +148,7 @@ export class PDFSigner {
         );
       }
 
-      return signedPdf;
+      return Buffer.from(signedPdf);
     } catch (error) {
       console.error('Error signing PDF:', error);
       throw error;

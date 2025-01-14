@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
-import { Buffer } from '@craftzdog/react-native-buffer';
 import {
   View,
   Text,
@@ -11,15 +10,16 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { P12Signer } from '@autopen/shared/crypto/signers/p12.signer';
 import { Asset } from 'expo-asset';
+import { P12Signer } from '@autopen/shared/crypto/signers/p12.signer';
+import { PDFSigner } from '@autopen/shared/signpdf/pdf-signer';
 
 type DocumentMetadata = {
   name: string;
   type: string;
   size: string;
   lastModified: string;
-  buffer: Buffer;
+  buffer: Buffer | Uint8Array;
 };
 
 export default function DocumentSigningView() {
@@ -89,9 +89,27 @@ export default function DocumentSigningView() {
     });
 
     await signer.initialize();
+    const pdfSigner = new PDFSigner();
+    const signedPdf = await pdfSigner.sign(documentMetadata.buffer, signer);
+    console.log(signedPdf);
 
-    const signature = signer.sign(documentMetadata.buffer);
-    console.log('>>>>>', signature);
+    // Save signed PDF to file system
+    const signedFileName = `signed_${documentMetadata.name}`;
+    const signedFilePath = `${FileSystem.documentDirectory}${signedFileName}`;
+    await FileSystem.writeAsStringAsync(
+      signedFilePath,
+      signedPdf.toString('base64'),
+      {
+        encoding: FileSystem.EncodingType.Base64,
+      },
+    );
+
+    // Update document metadata with signed file info
+    setDocumentMetadata({
+      ...documentMetadata,
+      buffer: signedPdf,
+      name: signedFileName,
+    });
 
     setCurrentStep('sign');
   };
