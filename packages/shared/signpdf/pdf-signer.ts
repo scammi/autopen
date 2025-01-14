@@ -45,7 +45,6 @@ export class PDFSigner {
 
       const mergedOptions = { ...PDFSigner.DEFAULT_OPTIONS, ...options };
 
-      // Load the PDF document
       const pdfDoc = await PDFDocument.load(pdfBuffer);
       const { context } = pdfDoc;
 
@@ -62,7 +61,7 @@ export class PDFSigner {
           mergedOptions.signingTime?.toISOString() || new Date().toISOString(),
         ),
         ByteRange: context.obj([0, 0, 0, 0]),
-        Contents: PDFHexString.of('0'.repeat(placeholderLength * 2)), // *2 because hex encoding
+        Contents: PDFHexString.of('0'.repeat(placeholderLength * 2)),
       });
 
       // Create signature field
@@ -112,15 +111,7 @@ export class PDFSigner {
         pdfBytes.slice(contentsEndPos),
       ]);
 
-      // Sign the PDF
       const signature = await signer.sign(pdfToSign, mergedOptions.signingTime);
-
-      // Add debug logging
-      console.log('Original PDF size:', pdfBytes.length);
-      console.log('ByteRange position:', byteRangePos);
-      console.log('Contents position:', contentsPos);
-      console.log('Contents end position:', contentsEndPos);
-      console.log('Signature length:', signature.length);
 
       // Convert signature to hex and ensure exact size match
       const signatureHex = Array.from(signature)
@@ -128,7 +119,6 @@ export class PDFSigner {
         .join('')
         .toUpperCase();
 
-      // Make sure the signature hex string is exactly the right length
       if (signatureHex.length > placeholderLength * 2) {
         throw new Error('Signature too large for allocated space');
       }
@@ -137,7 +127,6 @@ export class PDFSigner {
         placeholderLength * 2,
         '0',
       );
-      // Create final PDF with signature
       const signedPdf = this.concatUint8Arrays([
         pdfBytes.slice(0, byteRangePos),
         this.stringToUint8Array(`/ByteRange [${byteRange.join(' ')}] `),
@@ -146,8 +135,6 @@ export class PDFSigner {
         this.stringToUint8Array('>'),
         pdfBytes.slice(contentsEndPos + 1),
       ]);
-
-      console.log('Final PDF size:', signedPdf.length);
 
       if (signedPdf.length !== pdfBytes.length) {
         console.warn(

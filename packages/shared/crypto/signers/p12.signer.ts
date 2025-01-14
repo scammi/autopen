@@ -6,13 +6,13 @@ type P12Options = {
 };
 
 export class P12Signer implements ISigner {
-  p12Buffer: Uint8Array | Buffer;
+  p12Buffer: Buffer;
   passphrase?: string;
 
   cert: forge.pki.Certificate;
   privateKey: forge.pki.PrivateKey;
 
-  constructor(p12Buffer: Uint8Array | Buffer, options: P12Options = {}) {
+  constructor(p12Buffer: Buffer, options: P12Options = {}) {
     this.p12Buffer = p12Buffer;
     this.passphrase = options.passphrase;
   }
@@ -58,10 +58,7 @@ export class P12Signer implements ISigner {
     }
   }
 
-  async sign(
-    content: Uint8Array | Buffer,
-    signingTime: Date = new Date(),
-  ): Promise<Buffer | Uint8Array> {
+  async sign(content: Buffer, signingTime: Date = new Date()): Promise<Buffer> {
     if (!(content instanceof Uint8Array) && !Buffer.isBuffer(content)) {
       throw new Error('Content expected as Buffer');
     }
@@ -99,7 +96,6 @@ export class P12Signer implements ISigner {
     });
 
     p7.sign({ detached: true });
-    const derBytes = forge.asn1.toDer(p7.toAsn1()).getBytes();
-    return new Uint8Array(derBytes.split('').map(c => c.charCodeAt(0)));
+    return Buffer.from(forge.asn1.toDer(p7.toAsn1()).getBytes(), 'binary');
   }
 }
