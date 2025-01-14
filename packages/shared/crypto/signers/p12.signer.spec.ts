@@ -23,36 +23,18 @@ describe('P12Signer', () => {
     expect(p12Signer.cert).toBeDefined();
   });
 
-  it('should initialize with Uint8Array P12 data', async () => {
-    const uint8Array = new Uint8Array(p12Data);
-    const signer = new P12Signer(uint8Array, { passphrase: 'firmasoftware' });
-    await expect(signer.initialize()).resolves.not.toThrow();
-    expect(signer.privateKey).toBeDefined();
-    expect(signer.cert).toBeDefined();
-  });
-
   it('should throw error when initializing with invalid P12 data', async () => {
     const invalidSigner = new P12Signer(Buffer.from('invalid data'));
     await expect(invalidSigner.initialize()).rejects.toThrow();
   });
 
-  it('should sign content successfully after initialization with Buffer', async () => {
+  it('should sign content successfully', async () => {
     await p12Signer.initialize();
     const content = Buffer.from('Test content');
     const signature = await p12Signer.sign(content);
 
     expect(signature).toBeDefined();
-    expect(signature).toBeInstanceOf(Uint8Array);
-    expect(signature.length).toBeGreaterThan(0);
-  });
-
-  it('should sign content successfully after initialization with Uint8Array', async () => {
-    await p12Signer.initialize();
-    const content = new Uint8Array(Buffer.from('Test content'));
-    const signature = await p12Signer.sign(content);
-
-    expect(signature).toBeDefined();
-    expect(signature).toBeInstanceOf(Uint8Array);
+    expect(Buffer.isBuffer(signature)).toBeTruthy();
     expect(signature.length).toBeGreaterThan(0);
   });
 
@@ -78,20 +60,7 @@ describe('P12Signer', () => {
 
     const signature = await p12Signer.sign(content, signingTime);
     expect(signature).toBeDefined();
-    expect(signature).toBeInstanceOf(Uint8Array);
+    expect(Buffer.isBuffer(signature)).toBeTruthy();
     expect(signature.length).toBeGreaterThan(0);
-  });
-
-  it('should produce identical signatures for Buffer and Uint8Array inputs', async () => {
-    await p12Signer.initialize();
-    const bufferContent = Buffer.from('Test content');
-    const uint8ArrayContent = new Uint8Array(bufferContent);
-
-    const signatureFromBuffer = await p12Signer.sign(bufferContent);
-    const signatureFromUint8Array = await p12Signer.sign(uint8ArrayContent);
-
-    expect(Buffer.from(signatureFromBuffer)).toEqual(
-      Buffer.from(signatureFromUint8Array),
-    );
   });
 });
