@@ -52,6 +52,25 @@ describe('PDFSigner', () => {
     );
   });
 
+  afterAll(() => {
+    const fixturesDir = path.join(__dirname, '..', '__fixtures__');
+    const testFiles = [
+      'test-unsigned.pdf',
+      'test-signed-default.pdf',
+      'test-signed-custom.pdf',
+      'test-large-unsigned.pdf',
+      'test-large-signed.pdf'
+    ];
+
+    // Remove all test PDF files
+    testFiles.forEach(file => {
+      const filePath = path.join(fixturesDir, file);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    });
+  });
+
   beforeEach(async () => {
     pdfSigner = new PDFSigner();
     p12Signer = new P12Signer(p12Buffer, { passphrase: 'firmasoftware' });

@@ -1,11 +1,11 @@
 import * as forge from 'node-forge';
-import { ISigner } from '../interfaces/signer.interface';
+import { Signer } from '@signpdf/utils';
 
 type P12Options = {
   passphrase?: string;
 };
 
-export class P12Signer implements ISigner {
+export class P12Signer extends Signer {
   p12Buffer: Buffer;
   passphrase?: string;
 
@@ -13,6 +13,7 @@ export class P12Signer implements ISigner {
   privateKey: forge.pki.PrivateKey;
 
   constructor(p12Buffer: Buffer, options: P12Options = {}) {
+    super();
     this.p12Buffer = p12Buffer;
     this.passphrase = options.passphrase;
   }

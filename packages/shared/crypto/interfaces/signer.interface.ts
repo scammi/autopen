@@ -1,3 +1,7 @@
-export interface ISigner {
-  sign(content: Buffer, signingTime?: Date): Promise<Buffer>;
-}
+export type SigningOptions = {
+  reason?: string;
+  contactInfo?: string;
+  name?: string;
+  location?: string;
+  signingTime?: Date;
+};
