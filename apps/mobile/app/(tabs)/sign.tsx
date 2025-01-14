@@ -24,9 +24,9 @@ type DocumentMetadata = {
 };
 
 export default function DocumentSigningView() {
-  const [currentStep, setCurrentStep] = useState<
-    'upload' | 'review' | 'sign' | 'share'
-  >('upload');
+  const [currentStep, setCurrentStep] = useState<'upload' | 'review' | 'share'>(
+    'upload',
+  );
   const [documentMetadata, setDocumentMetadata] =
     useState<DocumentMetadata | null>(null);
 
@@ -114,12 +114,12 @@ export default function DocumentSigningView() {
     setCurrentStep('share');
   };
 
-  const handleShare = () => {
-    // Placeholder for sharing logic
-    alert('Sharing document...');
+  const handleReset = () => {
+    setCurrentStep('upload');
+    setDocumentMetadata(null);
   };
 
-  const handleDownload = async () => {
+  const handleShare = async () => {
     if (!documentMetadata?.name) {
       alert('No signed document available');
       return;
@@ -208,14 +208,14 @@ export default function DocumentSigningView() {
                 <Ionicons name="share-outline" size={24} color="#FFFFFF" />
                 <Text style={styles.shareButtonText}>Share</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.downloadButton}
-                onPress={handleDownload}
-              >
-                <Ionicons name="download-outline" size={24} color="#FFFFFF" />
-                <Text style={styles.downloadButtonText}>Download</Text>
-              </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              style={[styles.resetButton, { marginTop: 20 }]}
+              onPress={handleReset}
+            >
+              <Ionicons name="add-circle-outline" size={24} color="#FFFFFF" />
+              <Text style={styles.resetButtonText}>New Document</Text>
+            </TouchableOpacity>
           </View>
         );
     }
@@ -353,6 +353,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,
+    width: '80%',
+    justifyContent: 'center',
   },
   downloadButton: {
     flexDirection: 'row',
@@ -369,6 +371,22 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   downloadButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#666',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    width: '80%',
+    justifyContent: 'center',
+  },
+  resetButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
