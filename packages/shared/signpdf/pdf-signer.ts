@@ -168,7 +168,7 @@ export class PDFSigner {
   }
 }
 
-interface SignatureInfo {
+export interface SignatureInfo {
   // Basic validation info
   isValid: boolean;
   signatureExists: boolean;

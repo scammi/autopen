@@ -25,7 +25,8 @@ export default function TabLayout() {
           },
           default: {},
         }),
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -35,21 +36,21 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="scan"
-        options={{
-          title: 'Scan',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="camera.fill" color={color} />
-          ),
-        }}
-      /> */}
       <Tabs.Screen
         name="sign"
         options={{
           title: 'Sign',
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="signature" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="verify"
+        options={{
+          title: 'Verify',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="checkmark.seal.fill" color={color} />
           ),
         }}
       />
