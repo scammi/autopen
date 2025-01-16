@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import { PDFSigner, SignatureInfo } from '@autopen/shared/signpdf/pdf-signer';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
 
 export default function DocumentVerificationView() {
   const [signatureInfo, setSignatureInfo] = useState<SignatureInfo | null>(
@@ -38,83 +35,143 @@ export default function DocumentVerificationView() {
 
   const renderVerificationResult = () => {
     if (!signatureInfo) {
-      return <Text>No signature information available.</Text>;
+      return <ThemedText>No signature information available.</ThemedText>;
     }
 
     return (
-      <View style={styles.resultContainer}>
-        <Text style={styles.resultText}>
-          Signature Valid: {signatureInfo.isValid ? 'Yes' : 'No'}
-        </Text>
-        <Text style={styles.resultText}>
-          Signer Name: {signatureInfo.signerName}
-        </Text>
-        <Text style={styles.resultText}>
-          Signing Time: {signatureInfo.signingTime.toString()}
-        </Text>
-        <Text style={styles.resultText}>Reason: {signatureInfo.reason}</Text>
-        <Text style={styles.resultText}>
-          Location: {signatureInfo.location}
-        </Text>
-      </View>
+      <ThemedView style={styles.tableContainer}>
+        <ThemedText type="subtitle" style={styles.tableTitle}>
+          Signature Information
+        </ThemedText>
+        <View style={styles.tableBody}>
+          <TableRow
+            label="Signature Valid"
+            value={signatureInfo.isValid ? 'Yes' : 'No'}
+          />
+          <TableRow label="Signer Name" value={signatureInfo.signerName} />
+          <TableRow
+            label="Signing Time"
+            value={signatureInfo.signingTime.toString()}
+          />
+          <TableRow label="Reason" value={signatureInfo.reason} />
+          <TableRow label="Location" value={signatureInfo.location} />
+        </View>
+      </ThemedView>
     );
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Document Verification</Text>
-      <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
-        <Ionicons name="cloud-upload-outline" size={48} color="#007AFF" />
-        <Text style={styles.uploadText}>Upload Document</Text>
-      </TouchableOpacity>
-      <ScrollView style={styles.scrollView}>
-        {renderVerificationResult()}
-      </ScrollView>
+  const TableRow = ({ label, value }: { label: string; value: string }) => (
+    <View style={styles.tableRow}>
+      <ThemedText style={[styles.tableCell, styles.labelCell]}>
+        {label}
+      </ThemedText>
+      <ThemedText style={[styles.tableCell, styles.valueCell]}>
+        {value}
+      </ThemedText>
     </View>
+  );
+
+  return (
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerImage={
+        <FontAwesome
+          name="file-pdf-o"
+          size={100}
+          color="#FFD700"
+          style={styles.pdfIcon}
+        />
+      }
+    >
+      <ThemedView style={styles.container}>
+        <ThemedText type="title">Document Verification</ThemedText>
+
+        <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
+          <FontAwesome name="cloud-upload" size={48} color="#007AFF" />
+          <ThemedText style={styles.uploadText}>Upload Document</ThemedText>
+        </TouchableOpacity>
+
+        {renderVerificationResult()}
+      </ThemedView>
+    </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-    padding: 20,
-    paddingTop: 50,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
-    textAlign: 'center',
+    padding: 16,
+    gap: 24,
   },
   uploadButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E1E1E1',
-    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
     padding: 20,
-    width: '80%',
-    alignSelf: 'center',
-    marginBottom: 20,
+    width: '100%',
   },
   uploadText: {
     marginTop: 10,
     fontSize: 18,
     color: '#007AFF',
   },
-  scrollView: {
-    width: '100%',
+  infoContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+    padding: 16,
+    gap: 12,
   },
-  resultContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 20,
+  infoItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  resultText: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 5,
+  noteContainer: {
+    gap: 8,
+  },
+  pdfIcon: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+  },
+  tableContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 16,
+  },
+  tableTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+    paddingBottom: 8,
+    marginBottom: 8,
+  },
+  headerCell: {
+    flex: 1,
+    textAlign: 'left',
+  },
+  tableBody: {
+    gap: 8,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: 8,
+  },
+  tableCell: {
+    flex: 1,
+  },
+  labelCell: {
+    fontWeight: '600',
+  },
+  valueCell: {
+    textAlign: 'right',
   },
 });
