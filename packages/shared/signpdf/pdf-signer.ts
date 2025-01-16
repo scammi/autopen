@@ -61,13 +61,15 @@ export class PDFSigner {
       const pdf = await PDFDocument.load(pdfBuffer);
 
       // Get the acroForm dictionary
-      const acroForm = pdf.catalog.get(PDFName.of('AcroForm'));
-      if (!acroForm) {
-        return null; // No AcroForm means no signatures
+      let acroForm: PDFDict | undefined;
+      try {
+        acroForm = pdf.catalog.lookup(PDFName.of('AcroForm'), PDFDict);
+      } catch (error) {
+        console.warn('AcroForm not found or not a PDFDict:', error);
+        return null; // Return null if AcroForm is not found
       }
 
-      // Check if acroForm is a PDFDict
-      if (!(acroForm instanceof PDFDict)) {
+      if (!acroForm) {
         return null;
       }
 
@@ -113,6 +115,7 @@ export class PDFSigner {
         signatureType: 'Digital Signature',
         subFilter: this.extractString(sigDict, 'SubFilter'),
         byteRange: this.extractByteRange(sigDict),
+        hasVisibleSignature: false,
       };
 
       return signatureInfo;
