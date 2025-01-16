@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as LocalAuthentication from 'expo-local-authentication';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -59,6 +60,16 @@ export default function DocumentSigningView() {
   };
 
   const handleSign = async () => {
+    const auth = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Authenticate to sign document',
+      fallbackLabel: 'Use passcode',
+    });
+
+    if (!auth.success) {
+      alert('Authentication Failed. Please try again.');
+      return;
+    }
+
     if (!documentMetadata?.buffer) {
       throw new Error('No document loaded');
     }

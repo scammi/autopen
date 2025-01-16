@@ -35,7 +35,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="scan"
         options={{
           title: 'Scan',
@@ -43,7 +43,7 @@ export default function TabLayout() {
             <IconSymbol size={28} name="camera.fill" color={color} />
           ),
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="sign"
         options={{

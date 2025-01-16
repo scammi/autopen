@@ -1,5 +1,14 @@
 import sign from '@signpdf/signpdf';
-import { PDFDocument } from 'pdf-lib';
+import {
+  PDFArray,
+  PDFDict,
+  PDFDocument,
+  PDFHexString,
+  PDFName,
+  PDFNumber,
+  PDFObject,
+  PDFString,
+} from 'pdf-lib';
 import { pdflibAddPlaceholder } from '@signpdf/placeholder-pdf-lib';
 import { P12Signer } from '@/crypto/signers/p12.signer';
 import { SigningOptions } from '@/crypto/interfaces/signer.interface';
@@ -45,4 +54,151 @@ export class PDFSigner {
       throw error;
     }
   }
+
+  async verify(pdfBuffer: Buffer): Promise<SignatureInfo | null> {
+    try {
+      const pdf = await PDFDocument.load(pdfBuffer);
+
+      // Get the acroForm dictionary
+      const acroForm = pdf.catalog.lookup(PDFName.of('AcroForm'), PDFDict);
+      if (!acroForm || !(acroForm instanceof PDFDict)) {
+        return null; // No AcroForm means no signatures
+      }
+
+      // Get the fields array
+      const fields = acroForm.lookup(PDFName.of('Fields'), PDFArray);
+      if (!fields || !(fields instanceof PDFArray)) {
+        return null;
+      }
+
+      // Look for signature field
+      let signatureField: PDFDict | null = null;
+      for (let i = 0; i < fields.size(); i++) {
+        const field = fields.lookup(i, PDFDict);
+        if (!field) continue;
+
+        const fieldType = field.lookup(PDFName.of('FT'), PDFName);
+        if (fieldType?.toString() === '/Sig') {
+          signatureField = field;
+          break;
+        }
+      }
+
+      if (!signatureField) {
+        return null; // No signature field found
+      }
+
+      // Get the signature dictionary
+      const sigDict = signatureField.lookup(PDFName.of('V'), PDFDict);
+      if (!sigDict || !(sigDict instanceof PDFDict)) {
+        return null;
+      }
+
+      // Extract signature information
+      const signatureInfo: SignatureInfo = {
+        signatureExists: true,
+        isValid: false, // We'll verify this later
+        signerName: this.extractString(sigDict, 'Name') || 'Unknown',
+        reason: this.extractString(sigDict, 'Reason') || '',
+        location: this.extractString(sigDict, 'Location'),
+        contactInfo: this.extractString(sigDict, 'ContactInfo'),
+        signingTime: this.extractDate(sigDict, 'M') || new Date(),
+        signatureType: 'Digital Signature',
+        subFilter: this.extractString(sigDict, 'SubFilter'),
+        byteRange: this.extractByteRange(sigDict),
+      };
+
+      // Extract signature bytes
+      const contents = sigDict.lookup(PDFName.of('Contents'));
+      if (contents instanceof PDFString || contents instanceof PDFHexString) {
+        const signatureBytes = contents.decodeText();
+        // Perform further processing with signatureBytes
+      } else {
+        signatureInfo.isValid = false;
+        return signatureInfo;
+      }
+
+      // TODO: Next step - Verify the signature cryptographically
+      // We'll implement this in the next iteration
+
+      return signatureInfo;
+
+    } catch (error) {
+      console.error('Error verifying PDF:', error);
+      throw new Error('PDF verification failed: ' + error.message);
+    }
+  }
+
+  private extractString(dict: PDFDict, key: string): string | undefined {
+    const value = dict.lookup(PDFName.of(key));
+  
+    if (value instanceof PDFString || value instanceof PDFHexString) {
+      return value.decodeText();
+    } else if (value instanceof PDFName) {
+      return value.toString();
+    }
+  
+    return undefined;
+  }
+  private extractDate(dict: PDFDict, key: string): Date | undefined {
+    const dateStr = this.extractString(dict, key);
+    if (!dateStr) return undefined;
+
+    // PDF date format: D:YYYYMMDDHHmmSS
+    const match = dateStr.match(/D:(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);
+    if (!match) return undefined;
+
+    const [_, year, month, day, hour, minute, second] = match;
+    return new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      parseInt(hour),
+      parseInt(minute),
+      parseInt(second),
+    );
+  }
+
+  private extractByteRange(dict: PDFDict): number[] | undefined {
+    const byteRange = dict.lookup(PDFName.of('ByteRange'), PDFArray);
+    if (!byteRange || !(byteRange instanceof PDFArray)) return undefined;
+
+    const result: number[] = [];
+    for (let i = 0; i < byteRange.size(); i++) {
+      const num = byteRange.lookup(i, PDFNumber);
+      if (num) result.push(num.value());
+    }
+    return result;
+  }
 }
+
+interface SignatureInfo {
+  // Basic validation info
+  isValid: boolean;
+  signatureExists: boolean;
+
+  // Signer details
+  signerName: string;
+  signerDN?: string; // Distinguished Name from certificate
+  certificateInfo?: {
+    issuer: string;
+    subject: string;
+    validFrom: Date;
+    validTo: Date;
+    serialNumber?: string;
+  };
+
+  // Signature details
+  signingTime: Date;
+  reason: string;
+  location?: string;
+  contactInfo?: string;
+  signatureType: string;
+  subFilter?: string; // e.g., 'adbe.pkcs7.detached' or 'ETSI.CAdES.detached'
+
+  // Technical details
+  digestAlgorithm?: string;
+  hasVisibleSignature?: boolean;
+  byteRange?: number[];
+}
+

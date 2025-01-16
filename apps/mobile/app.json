@@ -61,10 +61,7 @@
         "expo-document-picker"
       ],
       [
-        "expo-asset",
-        {
-          "assets": ["apps/mobile/assets", "apps/mobile/assets/test.p12"]
-        }
+        "expo-asset"
       ]
     ],
     "experiments": {

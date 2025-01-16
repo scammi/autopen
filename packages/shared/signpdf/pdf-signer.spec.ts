@@ -59,7 +59,7 @@ describe('PDFSigner', () => {
       'test-signed-default.pdf',
       'test-signed-custom.pdf',
       'test-large-unsigned.pdf',
-      'test-large-signed.pdf'
+      'test-large-signed.pdf',
     ];
 
     // Remove all test PDF files
@@ -169,5 +169,81 @@ describe('PDFSigner', () => {
     );
 
     expect(signedLargePdf.length).toBeGreaterThan(largePdfBuffer.length);
+  });
+
+  describe('verify', () => {
+    it('should verify a valid signed PDF', async () => {
+      // First sign a PDF
+      const signedPdf = await pdfSigner.sign(pdfBuffer, p12Signer, {
+        reason: 'Test Signature',
+        name: 'Test Signer',
+        location: 'Test Location',
+        signingTime: new Date('2024-01-01T00:00:00Z'),
+      });
+
+      console.log(signedPdf);
+
+      // Then verify it
+      const verificationResult = await pdfSigner.verify(signedPdf);
+
+      expect(verificationResult).toBeDefined();
+      expect(verificationResult?.isValid).toBe(true);
+      expect(verificationResult?.signatureExists).toBe(true);
+      expect(verificationResult?.signerName).toBe('Test Signer');
+      expect(verificationResult?.reason).toBe('Test Signature');
+      expect(verificationResult?.location).toBe('Test Location');
+      expect(verificationResult?.signingTime).toEqual(
+        new Date('2024-01-01T00:00:00Z'),
+      );
+    });
+
+    it('should return null for unsigned PDF', async () => {
+      const verificationResult = await pdfSigner.verify(pdfBuffer);
+      expect(verificationResult).toBeNull();
+    });
+
+    it('should detect modified content after signature', async () => {
+      // Sign the PDF
+      const signedPdf = await pdfSigner.sign(pdfBuffer, p12Signer);
+
+      // Modify the signed PDF (append some content to invalidate signature)
+      const modifiedPdf = Buffer.concat([signedPdf, Buffer.from('modified')]);
+
+      const verificationResult = await pdfSigner.verify(modifiedPdf);
+
+      expect(verificationResult).toBeDefined();
+      expect(verificationResult?.isValid).toBe(false);
+      expect(verificationResult?.signatureExists).toBe(true);
+    });
+
+    it('should extract technical signature details', async () => {
+      const signedPdf = await pdfSigner.sign(pdfBuffer, p12Signer);
+      const verificationResult = await pdfSigner.verify(signedPdf);
+
+      expect(verificationResult).toBeDefined();
+      expect(verificationResult?.subFilter).toBe('adbe.pkcs7.detached');
+      expect(verificationResult?.digestAlgorithm).toBeDefined();
+      expect(verificationResult?.byteRange).toBeDefined();
+      expect(verificationResult?.hasVisibleSignature).toBeDefined();
+    });
+
+    it('should extract certificate information', async () => {
+      const signedPdf = await pdfSigner.sign(pdfBuffer, p12Signer);
+      const verificationResult = await pdfSigner.verify(signedPdf);
+
+      expect(verificationResult).toBeDefined();
+      expect(verificationResult?.certificateInfo).toBeDefined();
+      expect(verificationResult?.certificateInfo?.issuer).toBeDefined();
+      expect(verificationResult?.certificateInfo?.subject).toBeDefined();
+      expect(verificationResult?.certificateInfo?.validFrom).toBeInstanceOf(
+        Date,
+      );
+      expect(verificationResult?.certificateInfo?.validTo).toBeInstanceOf(Date);
+    });
+
+    it('should handle corrupted PDF files', async () => {
+      const corruptedPdf = Buffer.from('corrupted pdf content');
+      await expect(pdfSigner.verify(corruptedPdf)).rejects.toThrow();
+    });
   });
 });
