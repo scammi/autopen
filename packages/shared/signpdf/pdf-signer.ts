@@ -6,7 +6,6 @@ import {
   PDFHexString,
   PDFName,
   PDFNumber,
-  PDFObject,
   PDFString,
 } from 'pdf-lib';
 import * as forge from 'node-forge';
@@ -66,14 +65,13 @@ export class PDFSigner {
         acroForm = pdf.catalog.lookup(PDFName.of('AcroForm'), PDFDict);
       } catch (error) {
         console.warn('AcroForm not found or not a PDFDict:', error);
-        return null; // Return null if AcroForm is not found
+        return null;
       }
 
       if (!acroForm) {
         return null;
       }
 
-      // Get the fields array
       const fields = acroForm.lookup(PDFName.of('Fields'), PDFArray);
       if (!fields || !(fields instanceof PDFArray)) {
         return null;
@@ -103,11 +101,54 @@ export class PDFSigner {
         return null;
       }
 
+      const contents = sigDict.lookup(PDFName.of('Contents'), PDFHexString);
+      const byteRange = sigDict.lookup(PDFName.of('ByteRange'), PDFArray);
+
+      if (!contents || !byteRange) {
+        console.error('Missing Contents or ByteRange');
+        return null;
+      }
+
+      // Convert hex string to buffer
+      const signatureBuffer = Buffer.from(contents.asBytes());
+
+      console.log('Signature buffer length:', signatureBuffer.length);
+
+      // Create forge buffer and parse ASN.1 structure
+      let actualSignature = signatureBuffer;
+      let i = signatureBuffer.length - 1;
+      while (i >= 0 && signatureBuffer[i] === 0) {
+        i--;
+      }
+      if (i < signatureBuffer.length - 1) {
+        actualSignature = signatureBuffer.slice(0, i + 1);
+      }
+
+      // Look for ASN.1 sequence identifier (0x30)
+      const startIndex = actualSignature.findIndex(byte => byte === 0x30);
+      if (startIndex === -1) {
+        throw new Error('Invalid signature format: No ASN.1 sequence found');
+      }
+
+      let p7Asn1;
+      const forgeBuffer = forge.util.createBuffer(
+        actualSignature.slice(startIndex),
+      );
+      p7Asn1 = forge.asn1.fromDer(forgeBuffer.data);
+      const p7 = forge.pkcs7.messageFromAsn1(p7Asn1);
+
+      // Debug logging
+      console.log('Successfully parsed PKCS#7 structure');
+      //@ts-ignore
+      const certificateData = extractPKCS7Data(p7);
+      console.log(certificateData);
+
+      // Continue with the rest of your verification logic...
       // Extract signature information
       const signatureInfo: SignatureInfo = {
         signatureExists: true,
         isValid: true, // Mocking verification as true
-        signerName: this.extractString(sigDict, 'Name') || 'Unknown',
+        signerName: certificateData.subject?.commonName || 'Unknown',
         reason: this.extractString(sigDict, 'Reason') || '',
         location: this.extractString(sigDict, 'Location'),
         contactInfo: this.extractString(sigDict, 'ContactInfo'),
@@ -116,6 +157,12 @@ export class PDFSigner {
         subFilter: this.extractString(sigDict, 'SubFilter'),
         byteRange: this.extractByteRange(sigDict),
         hasVisibleSignature: false,
+        certificateInfo: {
+          issuer: certificateData.issuer.commonName,
+          subject: certificateData.subject?.serialNumber ?? 'n/a',
+          validFrom: certificateData.validity.notBefore,
+          validTo: certificateData.validity.notAfter,
+        },
       };
 
       return signatureInfo;
@@ -136,6 +183,7 @@ export class PDFSigner {
 
     return undefined;
   }
+
   private extractDate(dict: PDFDict, key: string): Date | undefined {
     const dateStr = this.extractString(dict, key);
     if (!dateStr) return undefined;
@@ -166,6 +214,51 @@ export class PDFSigner {
     }
     return result;
   }
+}
+
+function extractPKCS7Data(p7: any) {
+  // Extract certificate details
+  const certificateData = p7.certificates[0];
+  const extractedData = {
+    version: certificateData.version,
+    serialNumber: certificateData.serialNumber,
+    signatureAlgorithm: certificateData.signatureOid,
+
+    signature: Buffer.from(certificateData.signature, 'binary'),
+
+    subject: formatDN(certificateData.subject),
+    issuer: formatDN(certificateData.issuer),
+
+    validity: {
+      notBefore: certificateData.validity.notBefore,
+      notAfter: certificateData.validity.notAfter,
+    },
+
+    authenticatedAttributes: p7.rawCapture.authenticatedAttributes.map(
+      (attr: any) => ({
+        type: attr.type,
+        value: attr.value,
+      }),
+    ),
+
+    pkcs7Signature: Buffer.from(p7.rawCapture.signature, 'binary'),
+
+    contentType: p7.rawCapture.contentType,
+
+    digestAlgorithm: p7.rawCapture.digestAlgorithm,
+  };
+
+  return extractedData;
+}
+
+function formatDN(dn: any) {
+  const result: Record<string, string> = {};
+  if (dn && dn.attributes) {
+    dn.attributes.forEach((attr: any) => {
+      result[attr.name || attr.type] = attr.value;
+    });
+  }
+  return result;
 }
 
 export interface SignatureInfo {
