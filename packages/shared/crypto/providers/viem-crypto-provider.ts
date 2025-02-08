@@ -1,10 +1,13 @@
-import { ICryptoProvider } from '../interfaces/crypto-provider.interface';
-import { KeyPair, SignatureOptions } from '../interfaces/types';
+import {
+  ICryptoProvider,
+  IKeyPair,
+  SignatureOptions,
+} from '../interfaces/crypto-provider.interface';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { toHex, recoverMessageAddress } from 'viem';
 
 export class ViemCryptoProvider implements ICryptoProvider {
-  async generateKeyPair(): Promise<KeyPair> {
+  async generateKeyPair(): Promise<IKeyPair> {
     const privateKey = generatePrivateKey();
     const account = privateKeyToAccount(privateKey);
 
@@ -15,8 +18,9 @@ export class ViemCryptoProvider implements ICryptoProvider {
   }
 
   async sign(
-    message: string | Uint8Array,
+    message: string | Uint8Array | Buffer,
     privateKey: string,
+    certificates?: string[],
     options?: SignatureOptions,
   ): Promise<string> {
     const account = privateKeyToAccount(privateKey as `0x${string}`);
@@ -36,7 +40,7 @@ export class ViemCryptoProvider implements ICryptoProvider {
       message instanceof Uint8Array ? toHex(message) : message;
     const recoveredAddress = await recoverMessageAddress({
       message: messageToVerify,
-      signature: signature as `0x${string}`
+      signature: signature as `0x${string}`,
     });
 
     return recoveredAddress.toLowerCase() === publicKey.toLowerCase();

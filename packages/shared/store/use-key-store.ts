@@ -1,5 +1,7 @@
-import { IKeyMetadata } from '../crypto/interfaces/crypto-provider.interface';
-import { IKeyPair } from '../crypto/interfaces/types';
+import {
+  IKeyMetadata,
+  IKeyPair,
+} from '../crypto/interfaces/crypto-provider.interface';
 import { createStore } from './create-store';
 
 interface IKeyState {

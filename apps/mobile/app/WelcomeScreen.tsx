@@ -47,7 +47,9 @@ const WelcomeScreen = () => {
     <>
       <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} />
       <View style={styles.container}>
-        <Text style={styles.title}>{t('welcome.title')}</Text>
+        <View style={{ paddingTop: 20 }}>
+          <Text style={styles.title}>{t('welcome.title')}</Text>
+        </View>
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>{t('welcome.name')}</Text>
@@ -103,7 +105,6 @@ const WelcomeScreen = () => {
               returnKeyType="done"
             />
           </View>
-
           <Button title={t('welcome.enter')} onPress={handleLogin} />
         </View>
       </View>
