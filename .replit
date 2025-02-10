@@ -1,11 +1,14 @@
-modules = ["nodejs-20", "ruby-3.2"]
-run = "npm run dev"
+
+run = "pnpm --filter quark-firmador dev"
+modules = ["nodejs-20:v8-20230920-bd784b9"]
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "npm run dev"]
+build = ["sh", "-c", "pnpm --filter quark-firmador build"]
+run = ["sh", "-c", "pnpm --filter quark-firmador start"]
+deploymentTarget = "cloudrun"
 
 [[ports]]
 localPort = 3000
